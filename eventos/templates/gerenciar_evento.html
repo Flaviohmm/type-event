@@ -18,7 +18,7 @@
 
             <div class="col-md">
                 <br>
-                <input type="submit" class="btn-principal" value="filtrar">
+                <input type="submit" class="btn-principal" value="Filtrar">
                 </form>
             </div>
 
@@ -31,6 +31,7 @@
                 <th>Início</th>
                 <th>Término</th>
                 <th>Link de inscrição</th>
+                <th>Link de participantes</th>
             </tr>
             
             {% for evento in eventos %}
@@ -40,7 +41,16 @@
                     <td>{{evento.descricao}}</td>
                     <td>{{evento.data_inicio}}</td>
                     <td>{{evento.data_termino}}</td>
-                    <td>Link</td>
+                    <td>
+                        <a href="{% url 'inscrever_evento' evento.id %}" style="text-decoration: none; color: white;">
+                            Link de inscrição
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'participantes_evento' evento.id %}" style="text-decoration: none; color: white;">
+                            Link de participação
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
                 

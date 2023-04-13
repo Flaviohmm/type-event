@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from .models import Evento
 from django.contrib import messages
 from django.contrib.messages import constants
+from django.conf import settings
+from secrets import token_urlsafe
+import os
+import csv
 
 
 @login_required
@@ -62,3 +67,32 @@ def inscrever_evento(request, id):
 
         messages.add_message(request, constants.SUCCESS, 'Inscrito com sucesso.')
         return redirect(reverse('inscrever_evento', kwargs={'id': id}))
+    
+
+def participantes_evento(request, id):
+    evento = get_object_or_404(Evento, id=id)
+    if request.method == "GET":
+        participantes = evento.participantes.all()[::3]
+
+        if not evento.criador == request.user:
+            raise Http404('Esse evento não é seu')
+        
+        return render(request, 'participantes_evento.html', {'evento': evento, 'participantes': participantes})
+
+
+def gerar_csv(request, id):
+    evento = get_object_or_404(Evento, id=id)
+    if not evento.criador == request.user:
+        raise Http404('Esse evento não é seu')
+    participantes = evento.participantes.all()
+
+    token = f'{token_urlsafe(6)}.csv'
+    path = os.path.join(settings.MEDIA_ROOT, token)
+
+    with open(path, 'w') as arquivo:
+        writter = csv.writer(arquivo, delimiter=",")
+        for participante in participantes:
+            x = (participante.username, participante.email)
+            writter.writerow(x)
+
+    return redirect(f'/media/{token}')
