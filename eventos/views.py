@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .models import Evento
@@ -48,6 +48,17 @@ def gerenciar_evento(request):
         eventos = Evento.objects.filter(criador=request.user)
         if nome:
             eventos = eventos.filter(nome__contains=nome)
-            
+
         return render(request, 'gerenciar_evento.html', {'eventos': eventos})
     
+
+def inscrever_evento(request, id):
+    evento = get_object_or_404(Evento, id=id)
+    if request.method == "GET":
+        return render(request, 'inscrever_evento.html', {'evento': evento})
+    elif request.method == "POST":
+        evento.participantes.add(request.user)
+        evento.save()
+
+        messages.add_message(request, constants.SUCCESS, 'Inscrito com sucesso.')
+        return redirect(reverse('inscrever_evento', kwargs={'id': id}))
